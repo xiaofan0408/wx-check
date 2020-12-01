@@ -46,10 +46,10 @@ public class WxCheckComponent {
             }
             return checkResult;
         }catch (Exception e){
-            if (e instanceof SocketTimeoutException) {
+            if ((e instanceof SocketTimeoutException) || (e instanceof UnknownHostException)) {
                 checkResult.setResult(1);
                 return checkResult;
-            } else {
+            }else {
                 throw new Exception(e);
             }
         }
