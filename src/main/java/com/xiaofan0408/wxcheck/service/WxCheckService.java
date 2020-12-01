@@ -33,7 +33,7 @@ public class WxCheckService {
                     sink.error(e);
                 }
             }
-        }).publishOn(Schedulers.newBoundedElastic(128,1024,"check"));
+        }).publishOn(Schedulers.newBoundedElastic(1024,8192,"check"));
     }
 
 }
