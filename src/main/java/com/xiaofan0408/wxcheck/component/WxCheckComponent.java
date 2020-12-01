@@ -3,6 +3,7 @@ package com.xiaofan0408.wxcheck.component;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import okhttp3.OkHttpClient;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,11 @@ public class WxCheckComponent {
     private static final String CHECK_URL = "http://mp.weixinbridge.com/mp/wapredirect?url=%s&action=appmsg_redirect&uin=&biz=MzUxMTMxODc2MQ==&mid=100000007&idx=1&type=1&scene=0";
 
     private Pattern pattern = Pattern.compile("var cgiData =(.*);");
+
+   private OkHttpClient client = new OkHttpClient().newBuilder()
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .build();
 
     public CheckResult checkUrl(String url) throws Exception {
         CheckResult checkResult = new CheckResult();
