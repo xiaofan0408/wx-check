@@ -3,14 +3,21 @@ package com.xiaofan0408.wxcheck.component;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import okhttp3.OkHttpClient;
+import okhttp3.*;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.MonoSink;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
 
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.*;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,10 +29,20 @@ public class WxCheckComponent {
 
     private Pattern pattern = Pattern.compile("var cgiData =(.*);");
 
-   private OkHttpClient client = new OkHttpClient().newBuilder()
-            .followRedirects(true)
-            .followSslRedirects(true)
-            .build();
+    private OkHttpClient okHttpClient;
+
+    @PostConstruct
+    public void init() {
+        Dispatcher dispatcher = new Dispatcher();
+        dispatcher.setMaxRequests(1024);
+        dispatcher.setMaxRequestsPerHost(32);
+        okHttpClient = new OkHttpClient().newBuilder()
+                .followRedirects(true)
+                .followSslRedirects(true)
+                .connectTimeout(2, TimeUnit.SECONDS)
+                .readTimeout(2,TimeUnit.SECONDS)
+                .build();
+    }
 
     public CheckResult checkUrl(String url) throws Exception {
         CheckResult checkResult = new CheckResult();
@@ -77,11 +94,51 @@ public class WxCheckComponent {
         return null;
     }
 
+    public Mono<CheckResult> checkUrlOkHttp(String url) {
+
+        return Mono.create(new Consumer<MonoSink<CheckResult>>() {
+            @Override
+            public void accept(MonoSink<CheckResult> sink) {
+                CheckResult checkResult = new CheckResult();
+                try {
+                    String checkUrl = String.format(CHECK_URL,url);
+                    Request request = new Request.Builder()
+                            .url(checkUrl)
+                            .get()
+                            .build();
+                    Response response = okHttpClient.newCall(request).execute();
+                    String resultUrl = response.request().url().host();
+                    if (resultUrl.contains("weixin110.qq.com")) {
+                        String body = response.body().string();
+                        String json = getErrorJson(body);
+                        JSONObject jsonObject = JSON.parseObject(json);
+                        JSONObject detail = new JSONObject();
+                        detail.put("type",jsonObject.get("type"));
+                        detail.put("title",jsonObject.get("title"));
+                        detail.put("desc", jsonObject.get("desc"));
+                        checkResult.setResult(2);
+                        checkResult.setDetail(detail);
+                    } else {
+                        checkResult.setResult(1);
+                    }
+                    sink.success(checkResult);
+                    response.close();
+                } catch (Throwable e){
+                    if ((e instanceof SocketTimeoutException) || (e instanceof UnknownHostException)) {
+                        checkResult.setResult(1);
+                        sink.success(checkResult);
+                    }else {
+                        sink.error(e);
+                    }
+                }
+            }
+        }).publishOn(Schedulers.newBoundedElastic(1024,8196,"okhttp-wx-check"));
+    }
+
     public static void main(String[] args) throws Exception {
 
         WxCheckComponent wxCheckComponent = new WxCheckComponent();
         CheckResult checkResult = wxCheckComponent.checkUrl("http://69296n.cn");
         System.out.println(checkResult.getResult());
-
     }
 }

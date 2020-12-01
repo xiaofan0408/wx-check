@@ -36,4 +36,7 @@ public class WxCheckService {
         }).publishOn(Schedulers.newBoundedElastic(1024,8192,"check"));
     }
 
+    public Mono<CheckResult> checkDomain2(String url) {
+        return wxCheckComponent.checkUrlOkHttp(url);
+    }
 }

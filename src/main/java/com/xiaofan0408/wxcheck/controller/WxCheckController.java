@@ -18,4 +18,9 @@ public class WxCheckController {
     public Mono<CheckResult> check(@RequestParam("url")String url){
         return wxCheckService.checkDomain(url);
     }
+
+    @GetMapping("check2")
+    public Mono<CheckResult> check2(@RequestParam("url")String url){
+        return wxCheckService.checkDomain2(url);
+    }
 }
