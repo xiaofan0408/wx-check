@@ -35,7 +35,7 @@ public class WxCheckComponent {
     public void init() {
         Dispatcher dispatcher = new Dispatcher();
         dispatcher.setMaxRequests(1024);
-        dispatcher.setMaxRequestsPerHost(32);
+        dispatcher.setMaxRequestsPerHost(1024);
         okHttpClient = new OkHttpClient().newBuilder()
                 .followRedirects(true)
                 .followSslRedirects(true)
@@ -132,7 +132,7 @@ public class WxCheckComponent {
                     }
                 }
             }
-        }).publishOn(Schedulers.newBoundedElastic(1024,8196,"okhttp-wx-check"));
+        });
     }
 
     public static void main(String[] args) throws Exception {

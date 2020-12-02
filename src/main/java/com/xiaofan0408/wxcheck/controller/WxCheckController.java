@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @RestController
 public class WxCheckController {
@@ -22,5 +23,10 @@ public class WxCheckController {
     @GetMapping("check2")
     public Mono<CheckResult> check2(@RequestParam("url")String url){
         return wxCheckService.checkDomain2(url);
+    }
+
+    @GetMapping("check3")
+    public Mono<CheckResult> check3(@RequestParam("url")String url){
+        return wxCheckService.checkDomain3(url);
     }
 }

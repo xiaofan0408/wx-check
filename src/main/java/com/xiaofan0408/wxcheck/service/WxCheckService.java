@@ -33,10 +33,27 @@ public class WxCheckService {
                     sink.error(e);
                 }
             }
-        }).publishOn(Schedulers.newBoundedElastic(1024,8192,"check"));
+        }) .publishOn(Schedulers.boundedElastic())
+                .subscribeOn(Schedulers.boundedElastic());
     }
 
     public Mono<CheckResult> checkDomain2(String url) {
-        return wxCheckComponent.checkUrlOkHttp(url);
+        return wxCheckComponent.checkUrlOkHttp(url)
+                .publishOn(Schedulers.boundedElastic())
+                .subscribeOn(Schedulers.boundedElastic());
+    }
+
+    public Mono<CheckResult> checkDomain3(String url) {
+        return Mono.create(new Consumer<MonoSink<CheckResult>>() {
+            @Override
+            public void accept(MonoSink<CheckResult> sink) {
+                try {
+                    Thread.sleep(100);
+                    sink.success(new CheckResult());
+                }catch (Exception e){
+                    sink.error(e);
+                }
+            }
+        }).subscribeOn(Schedulers.newBoundedElastic(2048,8192,"test"));
     }
 }
