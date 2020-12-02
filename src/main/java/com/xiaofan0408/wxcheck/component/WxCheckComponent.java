@@ -33,15 +33,14 @@ public class WxCheckComponent {
 
     @PostConstruct
     public void init() {
-        Dispatcher dispatcher = new Dispatcher();
-        dispatcher.setMaxRequests(1024);
-        dispatcher.setMaxRequestsPerHost(32);
         okHttpClient = new OkHttpClient().newBuilder()
                 .followRedirects(true)
                 .followSslRedirects(true)
                 .connectTimeout(2, TimeUnit.SECONDS)
                 .readTimeout(2,TimeUnit.SECONDS)
                 .build();
+        okHttpClient.dispatcher().setMaxRequests(1024);
+        okHttpClient.dispatcher().setMaxRequestsPerHost(1024);
     }
 
     public CheckResult checkUrl(String url) throws Exception {
@@ -94,45 +93,40 @@ public class WxCheckComponent {
         return null;
     }
 
-    public Mono<CheckResult> checkUrlOkHttp(String url) {
+    public CheckResult checkUrlOkHttp(String url) throws Exception {
 
-        return Mono.create(new Consumer<MonoSink<CheckResult>>() {
-            @Override
-            public void accept(MonoSink<CheckResult> sink) {
-                CheckResult checkResult = new CheckResult();
-                try {
-                    String checkUrl = String.format(CHECK_URL,url);
-                    Request request = new Request.Builder()
-                            .url(checkUrl)
-                            .get()
-                            .build();
-                    Response response = okHttpClient.newCall(request).execute();
-                    String resultUrl = response.request().url().host();
-                    if (resultUrl.contains("weixin110.qq.com")) {
-                        String body = response.body().string();
-                        String json = getErrorJson(body);
-                        JSONObject jsonObject = JSON.parseObject(json);
-                        JSONObject detail = new JSONObject();
-                        detail.put("type",jsonObject.get("type"));
-                        detail.put("title",jsonObject.get("title"));
-                        detail.put("desc", jsonObject.get("desc"));
-                        checkResult.setResult(2);
-                        checkResult.setDetail(detail);
-                    } else {
-                        checkResult.setResult(1);
-                    }
-                    sink.success(checkResult);
-                    response.close();
-                } catch (Throwable e){
-                    if ((e instanceof SocketTimeoutException) || (e instanceof UnknownHostException)) {
-                        checkResult.setResult(1);
-                        sink.success(checkResult);
-                    }else {
-                        sink.error(e);
-                    }
-                }
+        CheckResult checkResult = new CheckResult();
+        try {
+            String checkUrl = String.format(CHECK_URL,url);
+            Request request = new Request.Builder()
+                    .url(checkUrl)
+                    .get()
+                    .build();
+            Response response = okHttpClient.newCall(request).execute();
+            String resultUrl = response.request().url().host();
+            if (resultUrl.contains("weixin110.qq.com")) {
+                String body = response.body().string();
+                String json = getErrorJson(body);
+                JSONObject jsonObject = JSON.parseObject(json);
+                JSONObject detail = new JSONObject();
+                detail.put("type",jsonObject.get("type"));
+                detail.put("title",jsonObject.get("title"));
+                detail.put("desc", jsonObject.get("desc"));
+                checkResult.setResult(2);
+                checkResult.setDetail(detail);
+            } else {
+                checkResult.setResult(1);
             }
-        }).publishOn(Schedulers.newBoundedElastic(1024,8196,"okhttp-wx-check"));
+            response.close();
+            return checkResult;
+        } catch (Throwable e){
+            if ((e instanceof SocketTimeoutException) || (e instanceof UnknownHostException)) {
+                checkResult.setResult(1);
+                return checkResult;
+            }else {
+                throw new Exception(e);
+            }
+        }
     }
 
     public static void main(String[] args) throws Exception {

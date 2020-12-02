@@ -15,12 +15,12 @@ public class WxCheckController {
     private WxCheckService wxCheckService;
 
     @GetMapping("check")
-    public Mono<CheckResult> check(@RequestParam("url")String url){
+    public CheckResult check(@RequestParam("url")String url) throws Exception {
         return wxCheckService.checkDomain(url);
     }
 
     @GetMapping("check2")
-    public Mono<CheckResult> check2(@RequestParam("url")String url){
+    public CheckResult check2(@RequestParam("url")String url) throws Exception {
         return wxCheckService.checkDomain2(url);
     }
 }
