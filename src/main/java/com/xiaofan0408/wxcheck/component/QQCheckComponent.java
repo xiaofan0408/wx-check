@@ -67,6 +67,8 @@ public class QQCheckComponent {
                 data.put("desc",qqResult.getWording());
                 checkResult.setDetail(data);
             }
+        } else {
+            throw new Exception("检测查询失败");
         }
         return checkResult;
     }
