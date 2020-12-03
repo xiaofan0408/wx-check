@@ -1,4 +1,4 @@
-package com.xiaofan0408.wxcheck.component;
+package com.xiaofan0408.wxcheck.component.model;
 
 import lombok.Getter;
 import lombok.Setter;

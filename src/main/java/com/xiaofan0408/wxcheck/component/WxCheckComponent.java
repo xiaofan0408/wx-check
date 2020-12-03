@@ -3,18 +3,16 @@ package com.xiaofan0408.wxcheck.component;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.xiaofan0408.wxcheck.component.model.CheckResult;
 import okhttp3.*;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoSink;
-import reactor.core.scheduler.Scheduler;
-import reactor.core.scheduler.Schedulers;
 
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 import java.net.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;

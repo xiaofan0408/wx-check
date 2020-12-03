@@ -1,6 +1,7 @@
 package com.xiaofan0408.wxcheck.service;
 
-import com.xiaofan0408.wxcheck.component.CheckResult;
+import com.xiaofan0408.wxcheck.component.model.CheckResult;
+import com.xiaofan0408.wxcheck.component.QQCheckComponent;
 import com.xiaofan0408.wxcheck.component.WxCheckComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,10 +13,13 @@ import reactor.core.scheduler.Schedulers;
 import java.util.function.Consumer;
 
 @Service
-public class WxCheckService {
+public class CheckService {
 
     @Autowired
     private WxCheckComponent wxCheckComponent;
+
+    @Autowired
+    private QQCheckComponent qqCheckComponent;
 
     public Mono<CheckResult> checkDomain(String url){
         return Mono.create(new Consumer<MonoSink<CheckResult>>() {
@@ -55,5 +59,19 @@ public class WxCheckService {
                 }
             }
         }).subscribeOn(Schedulers.newBoundedElastic(2048,8192,"test"));
+    }
+
+    public Mono<CheckResult> checkQQDomain(String url){
+        return Mono.create(new Consumer<MonoSink<CheckResult>>() {
+            @Override
+            public void accept(MonoSink<CheckResult> sink) {
+                try {
+                    CheckResult checkResult = qqCheckComponent.check(url);
+                    sink.success(checkResult);
+                } catch (Exception e){
+                    sink.error(e);
+                }
+            }
+        });
     }
 }
