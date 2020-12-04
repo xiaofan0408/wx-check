@@ -4,6 +4,7 @@ package com.xiaofan0408.wxcheck.component;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.xiaofan0408.wxcheck.component.model.CheckResult;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -13,13 +14,16 @@ import reactor.core.publisher.MonoSink;
 
 
 import javax.annotation.PostConstruct;
+import javax.net.ssl.*;
 import java.net.*;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
+@Slf4j
 @Component
 public class WxCheckComponent {
 
@@ -39,7 +43,50 @@ public class WxCheckComponent {
                 .followSslRedirects(true)
                 .connectTimeout(2, TimeUnit.SECONDS)
                 .readTimeout(2,TimeUnit.SECONDS)
+                .sslSocketFactory(createSSLSocketFactory(),new TrustAllManager())
+                .hostnameVerifier(hostnameVerifier())
                 .build();
+    }
+
+    private HostnameVerifier hostnameVerifier(){
+        return new HostnameVerifier() {
+            @Override
+            public boolean verify(String s, SSLSession sslSession) {
+                return true;
+            }
+        };
+    }
+
+    private SSLSocketFactory createSSLSocketFactory () {
+
+        SSLSocketFactory sSLSocketFactory = null;
+
+        try {
+            SSLContext sc = SSLContext.getInstance("TLS");
+            sc.init(null, new TrustManager[]{new TrustAllManager()}, new SecureRandom());
+            sSLSocketFactory = sc.getSocketFactory();
+        } catch (Exception e) {
+            log.info(e.getMessage(), e);
+        }
+
+        return sSLSocketFactory;
+    }
+
+    private  class TrustAllManager implements X509TrustManager {
+        @Override
+        public void checkClientTrusted(java.security.cert.X509Certificate[] x509Certificates,
+                                       String s) throws java.security.cert.CertificateException {
+        }
+
+        @Override
+        public void checkServerTrusted(java.security.cert.X509Certificate[] x509Certificates,
+                                       String s) throws java.security.cert.CertificateException {
+        }
+
+        @Override
+        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
+        }
     }
 
     public CheckResult checkUrl(String url) throws Exception {
