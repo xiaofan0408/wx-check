@@ -15,18 +15,8 @@ public class CheckController {
     private CheckService checkService;
 
     @GetMapping("check")
-    public Mono<CheckResult> check(@RequestParam("url")String url){
-        return checkService.checkDomain(url);
-    }
-
-    @GetMapping("check2")
     public Mono<CheckResult> check2(@RequestParam("url")String url){
-        return checkService.checkDomain2(url);
-    }
-
-    @GetMapping("check3")
-    public Mono<CheckResult> check3(@RequestParam("url")String url){
-        return checkService.checkDomain3(url);
+        return checkService.checkWxDomain(url);
     }
 
     @GetMapping("qqCheck")

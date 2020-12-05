@@ -21,44 +21,12 @@ public class CheckService {
     @Autowired
     private QQCheckComponent qqCheckComponent;
 
-    public Mono<CheckResult> checkDomain(String url){
-        return Mono.create(new Consumer<MonoSink<CheckResult>>() {
-            @Override
-            public void accept(MonoSink<CheckResult> sink) {
-                try {
-                    if (url == null && url.isEmpty()) {
-                       sink.error(new Exception("url 不能为空"));
-                    }
-                    if (!(url.startsWith("http") || url.startsWith("https"))) {
-                        sink.error(new Exception("url需要带上http或者https"));
-                    }
-                    sink.success(wxCheckComponent.checkUrl(url));
-                }catch (Exception e){
-                    sink.error(e);
-                }
-            }
-        }) .publishOn(Schedulers.boundedElastic())
-                .subscribeOn(Schedulers.boundedElastic());
-    }
 
-    public Mono<CheckResult> checkDomain2(String url) {
+
+    public Mono<CheckResult> checkWxDomain(String url) {
         return wxCheckComponent.checkUrlOkHttp(url)
                 .publishOn(Schedulers.boundedElastic())
                 .subscribeOn(Schedulers.boundedElastic());
-    }
-
-    public Mono<CheckResult> checkDomain3(String url) {
-        return Mono.create(new Consumer<MonoSink<CheckResult>>() {
-            @Override
-            public void accept(MonoSink<CheckResult> sink) {
-                try {
-                    Thread.sleep(100);
-                    sink.success(new CheckResult());
-                }catch (Exception e){
-                    sink.error(e);
-                }
-            }
-        }).subscribeOn(Schedulers.newBoundedElastic(2048,8192,"test"));
     }
 
     public Mono<CheckResult> checkQQDomain(String url){
