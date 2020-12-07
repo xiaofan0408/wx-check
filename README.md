@@ -21,6 +21,6 @@
 ### 试用
 
 可以访问 118.25.217.97:8083/check 和 118.25.217.97:8083/qqCheck 试用
-
-![](../doc/wx-success.png)
-![](../doc/wx-failed.png)
+  ![wx-success](./doc/wx-success.png)
+  
+  ![wx-fail](./doc/wx-failed.png)
