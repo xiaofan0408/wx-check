@@ -4,6 +4,7 @@ import com.xiaofan0408.wxcheck.common.exception.ServiceException;
 import com.xiaofan0408.wxcheck.component.model.CheckResult;
 import com.xiaofan0408.wxcheck.component.QQCheckComponent;
 import com.xiaofan0408.wxcheck.component.WxCheckComponent;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -13,6 +14,7 @@ import reactor.core.scheduler.Schedulers;
 
 import java.util.function.Consumer;
 
+@Slf4j
 @Service
 public class CheckService {
 
@@ -25,11 +27,12 @@ public class CheckService {
 
 
     public Mono<CheckResult> checkWxDomain(String url) {
+        log.info("wx check url:{}",url);
         if (url == null || url.isEmpty()) {
-            return Mono.error(new ServiceException(5001,"url不能为空"));
+            throw new ServiceException(5001,"url不能为空");
         }
         if (!(url.startsWith("http://") || url.startsWith("https://"))) {
-            return Mono.error(new ServiceException(5002,"url需要以http://或者https://开头"));
+            throw new ServiceException(5002,"url需要以http://或者https://开头");
         }
         return wxCheckComponent.checkUrlOkHttp(url)
                 .publishOn(Schedulers.boundedElastic())
@@ -37,11 +40,12 @@ public class CheckService {
     }
 
     public Mono<CheckResult> checkQQDomain(String url){
+        log.info("qq check url:{}",url);
         if (url == null || url.isEmpty()) {
-            return Mono.error(new ServiceException(5001,"url不能为空"));
+            throw new ServiceException(5001,"url不能为空");
         }
         if (!(url.startsWith("http://") || url.startsWith("https://"))) {
-            return Mono.error(new ServiceException(5002,"url需要以http://或者https://开头"));
+            throw new ServiceException(5002,"url需要以http://或者https://开头");
         }
         return Mono.create(new Consumer<MonoSink<CheckResult>>() {
             @Override
