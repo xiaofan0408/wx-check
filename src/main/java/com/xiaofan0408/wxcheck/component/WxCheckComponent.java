@@ -114,7 +114,7 @@ public class WxCheckComponent {
             }
             return checkResult;
         }catch (Exception e){
-            if ((e instanceof SocketTimeoutException) || (e instanceof UnknownHostException)) {
+            if ((e instanceof SocketTimeoutException) || (e instanceof UnknownHostException) || (e instanceof SocketException)) {
                 checkResult.setResult(1);
                 return checkResult;
             }else {
@@ -169,7 +169,7 @@ public class WxCheckComponent {
                     sink.success(checkResult);
                     response.close();
                 } catch (Throwable e){
-                    if ((e instanceof SocketTimeoutException) || (e instanceof UnknownHostException)) {
+                    if ((e instanceof SocketTimeoutException) || (e instanceof UnknownHostException)|| (e instanceof SocketException)) {
                         checkResult.setResult(1);
                         sink.success(checkResult);
                     }else {
