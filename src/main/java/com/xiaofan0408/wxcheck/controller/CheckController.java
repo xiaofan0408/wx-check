@@ -21,6 +21,11 @@ public class CheckController {
         return checkService.checkWxDomain(url,serverWebExchange);
     }
 
+    @GetMapping(value = "checkNoDetail",produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<CheckResult> checkNoDetail(@RequestParam("url")String url, ServerWebExchange serverWebExchange){
+        return checkService.checkWxDomainNoDetail(url,serverWebExchange);
+    }
+
     @GetMapping(value = "qqCheck", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<CheckResult> qqCheck(@RequestParam("url")String url, ServerWebExchange serverWebExchange){
         return checkService.checkQQDomain(url,serverWebExchange);

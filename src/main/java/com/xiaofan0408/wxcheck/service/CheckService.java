@@ -37,7 +37,7 @@ public class CheckService {
         if (!(url.startsWith("http://") || url.startsWith("https://"))) {
             throw new ServiceException(5002,"url需要以http://或者https://开头");
         }
-        return wxCheckComponent.checkUrlOkHttp(url)
+        return wxCheckComponent.checkUrlOkHttp(url,true)
                 .publishOn(Schedulers.boundedElastic())
                 .subscribeOn(Schedulers.boundedElastic());
     }
@@ -93,5 +93,18 @@ public class CheckService {
         }
 
         return ip.replaceAll(":", ".");
+    }
+
+    public Mono<CheckResult> checkWxDomainNoDetail(String url, ServerWebExchange serverWebExchange) {
+        log.info("client ip:{},wx check url:{}",getIp(serverWebExchange),url);
+        if (url == null || url.isEmpty()) {
+            throw new ServiceException(5001,"url不能为空");
+        }
+        if (!(url.startsWith("http://") || url.startsWith("https://"))) {
+            throw new ServiceException(5002,"url需要以http://或者https://开头");
+        }
+        return wxCheckComponent.checkUrlOkHttp(url,false)
+                .publishOn(Schedulers.boundedElastic())
+                .subscribeOn(Schedulers.boundedElastic());
     }
 }

@@ -139,7 +139,7 @@ public class WxCheckComponent {
         return null;
     }
 
-    public Mono<CheckResult> checkUrlOkHttp(String url) {
+    public Mono<CheckResult> checkUrlOkHttp(String url,Boolean isShowDetail) {
 
         return Mono.create(new Consumer<MonoSink<CheckResult>>() {
             @Override
@@ -154,15 +154,17 @@ public class WxCheckComponent {
                     Response response = okHttpClient.newCall(request).execute();
                     String resultUrl = response.request().url().host();
                     if (resultUrl.contains("weixin110.qq.com")) {
-                        String body = response.body().string();
-                        String json = getErrorJson(body);
-                        JSONObject jsonObject = JSON.parseObject(json);
-                        JSONObject detail = new JSONObject();
-                        detail.put("type",jsonObject.get("type"));
-                        detail.put("title",jsonObject.get("title"));
-                        detail.put("desc", jsonObject.get("desc"));
+                        if (isShowDetail) {
+                            String body = response.body().string();
+                            String json = getErrorJson(body);
+                            JSONObject jsonObject = JSON.parseObject(json);
+                            JSONObject detail = new JSONObject();
+                            detail.put("type",jsonObject.get("type"));
+                            detail.put("title",jsonObject.get("title"));
+                            detail.put("desc", jsonObject.get("desc"));
+                            checkResult.setDetail(detail);
+                        }
                         checkResult.setResult(2);
-                        checkResult.setDetail(detail);
                     } else {
                         checkResult.setResult(1);
                     }
